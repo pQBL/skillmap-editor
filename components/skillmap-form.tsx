@@ -251,7 +251,7 @@ function ObjectiveEditor({ objective, onChange, onRemove }: ObjectiveEditorProps
             color: 'var(--text-secondary)',
             marginBottom: 'var(--space-2)'
           }}>
-            Goal
+            Objective
           </label>
           <input
             type="text"
