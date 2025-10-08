@@ -9,11 +9,28 @@ import { SkillmapMetadata } from "@/components/skillmap-metadata";
 
 const LOCALSTORAGE_KEY = "skillmap-editor-data";
 
+function addTimestampSuffix(filename: string): string {
+  const timestamp = new Date().toISOString()
+    .replace(/[:.]/g, '-')
+    .replace('T', '_')
+    .split('Z')[0];
+
+  const lastDot = filename.lastIndexOf('.');
+  if (lastDot === -1) {
+    return `${filename}_${timestamp}`;
+  }
+
+  const name = filename.substring(0, lastDot);
+  const ext = filename.substring(lastDot);
+  return `${name}_${timestamp}${ext}`;
+}
+
 export function SkillmapEditor() {
   const [skillmap, setSkillmap] = useState<Skillmap | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string>("");
   const [selectedModuleIndex, setSelectedModuleIndex] = useState<number>(0);
+  const [isEditingFileName, setIsEditingFileName] = useState(false);
 
   // Load from localStorage on mount
   useEffect(() => {
@@ -51,7 +68,7 @@ export function SkillmapEditor() {
       const json = JSON.parse(content);
       const validated = skillmapSchema.parse(json);
       setSkillmap(validated);
-      setFileName(file.name);
+      setFileName(addTimestampSuffix(file.name));
       setSelectedModuleIndex(0);
     } catch (err) {
       if (err instanceof Error) {
@@ -153,48 +170,96 @@ export function SkillmapEditor() {
 
   return (
     <div className="h-[calc(100vh-12rem)] flex flex-col">
+      {/* Metadata Section - Top */}
       <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
         background: 'var(--bg-primary)',
-        padding: 'var(--space-6) var(--space-6)',
         borderBottom: 'var(--border-width) solid var(--border-primary)'
       }}>
-        <div>
-          <p style={{
-            fontSize: 'var(--text-xs)',
-            color: 'var(--text-tertiary)',
-            textTransform: 'uppercase',
-            letterSpacing: '0.05em',
-            fontWeight: 'var(--font-medium)'
-          }}>
-            Editing
-          </p>
-          <p style={{
-            fontWeight: 'var(--font-semibold)',
-            color: 'var(--text-primary)',
-            marginTop: 'var(--space-1)'
-          }}>
-            {fileName}
-          </p>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: 'var(--space-4) var(--space-6)',
+          borderBottom: 'var(--border-width) solid var(--border-primary)'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', flex: 1 }}>
+            <label style={{
+              fontSize: 'var(--text-xs)',
+              color: 'var(--text-tertiary)',
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em',
+              fontWeight: 'var(--font-medium)',
+              whiteSpace: 'nowrap'
+            }}>
+              File:
+            </label>
+            {isEditingFileName ? (
+              <input
+                type="text"
+                value={fileName}
+                onChange={(e) => setFileName(e.target.value)}
+                onBlur={() => setIsEditingFileName(false)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') setIsEditingFileName(false);
+                  if (e.key === 'Escape') {
+                    setIsEditingFileName(false);
+                  }
+                }}
+                autoFocus
+                className="input"
+                style={{
+                  flex: 1,
+                  maxWidth: '400px',
+                  fontSize: 'var(--text-sm)',
+                  padding: 'var(--space-1) var(--space-2)'
+                }}
+              />
+            ) : (
+              <button
+                onClick={() => setIsEditingFileName(true)}
+                style={{
+                  fontWeight: 'var(--font-semibold)',
+                  color: 'var(--text-primary)',
+                  background: 'transparent',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: 'var(--space-1) var(--space-2)',
+                  borderRadius: 'var(--radius-base)',
+                  transition: 'background var(--transition-fast)',
+                  textAlign: 'left'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.background = 'var(--bg-secondary)'}
+                onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                title="Click to edit filename"
+              >
+                {fileName}
+              </button>
+            )}
+          </div>
+          <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
+            <button
+              onClick={handleClear}
+              className="btn btn-secondary"
+            >
+              Clear
+            </button>
+            <button
+              onClick={handleDownload}
+              className="btn btn-primary"
+            >
+              Download JSON
+            </button>
+          </div>
         </div>
-        <div style={{ display: 'flex', gap: 'var(--space-3)' }}>
-          <button
-            onClick={handleClear}
-            className="btn btn-secondary"
-          >
-            Clear
-          </button>
-          <button
-            onClick={handleDownload}
-            className="btn btn-primary"
-          >
-            Download JSON
-          </button>
-        </div>
+
+        <SkillmapMetadata
+          title={skillmap.title}
+          description={skillmap.description}
+          onChange={updateMetadata}
+        />
       </div>
 
+      {/* Main Content Area - Sidebar + Module Editor */}
       <div className="flex flex-1 overflow-hidden">
         <ModuleSidebar
           skillmap={skillmap}
@@ -205,11 +270,6 @@ export function SkillmapEditor() {
           onRemoveModule={handleRemoveModule}
         />
         <div className="flex-1 overflow-y-auto">
-          <SkillmapMetadata
-            title={skillmap.title}
-            description={skillmap.description}
-            onChange={updateMetadata}
-          />
           <SkillmapForm
             skillmap={skillmap}
             onChange={setSkillmap}
