@@ -31,6 +31,8 @@ export function SkillmapEditor() {
   const [fileName, setFileName] = useState<string>("");
   const [selectedModuleIndex, setSelectedModuleIndex] = useState<number>(0);
   const [isEditingFileName, setIsEditingFileName] = useState(false);
+  const [isTabsCollapsed, setIsTabsCollapsed] = useState(false);
+  const [isMetadataCollapsed, setIsMetadataCollapsed] = useState(false);
 
   // Load from localStorage on mount
   useEffect(() => {
@@ -146,6 +148,13 @@ export function SkillmapEditor() {
     setSkillmap({ ...skillmap, title, description });
   };
 
+  const handleUpdateModuleTitle = (index: number, title: string) => {
+    if (!skillmap) return;
+    const modules = [...skillmap.modules];
+    modules[index] = { ...modules[index], title };
+    setSkillmap({ ...skillmap, modules });
+  };
+
   if (!skillmap) {
     return (
       <div>
@@ -252,20 +261,51 @@ export function SkillmapEditor() {
       {/* Three Column Layout */}
       <div className="flex flex-1 overflow-hidden">
         {/* Left Column - Module Tabs (1/4) */}
-        <ModuleSidebar
-          skillmap={skillmap}
-          selectedIndex={selectedModuleIndex}
-          onSelectModule={setSelectedModuleIndex}
-          onReorder={handleReorderModules}
-          onAddModule={handleAddModule}
-          onRemoveModule={handleRemoveModule}
-        />
+        {isTabsCollapsed ? (
+          <div style={{
+            width: '48px',
+            background: 'var(--bg-primary)',
+            borderRight: 'var(--border-width) solid var(--border-primary)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: 'var(--space-2)'
+          }}>
+            <button
+              onClick={() => setIsTabsCollapsed(false)}
+              className="btn btn-secondary"
+              style={{
+                padding: 'var(--space-2)',
+                width: '32px',
+                height: '32px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+              title="Expand modules sidebar"
+            >
+              <svg style={{ width: '16px', height: '16px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
+        ) : (
+          <ModuleSidebar
+            skillmap={skillmap}
+            selectedIndex={selectedModuleIndex}
+            onSelectModule={setSelectedModuleIndex}
+            onReorder={handleReorderModules}
+            onAddModule={handleAddModule}
+            onRemoveModule={handleRemoveModule}
+            onUpdateModuleTitle={handleUpdateModuleTitle}
+            onCollapse={() => setIsTabsCollapsed(true)}
+          />
+        )}
 
         {/* Middle Column - Module Editor (2/4) */}
         <div style={{
-          flex: '2',
+          flex: isTabsCollapsed || isMetadataCollapsed ? '3' : '2',
           minWidth: 0,
-          maxWidth: '50%',
           overflowY: 'auto',
           borderRight: 'var(--border-width) solid var(--border-primary)'
         }}>
@@ -277,19 +317,49 @@ export function SkillmapEditor() {
         </div>
 
         {/* Right Column - Metadata (1/4) */}
-        <div style={{
-          flex: '1',
-          minWidth: 0,
-          maxWidth: '25%',
-          overflowY: 'auto',
-          background: 'var(--bg-primary)'
-        }}>
-          <SkillmapMetadata
-            title={skillmap.title}
-            description={skillmap.description}
-            onChange={updateMetadata}
-          />
-        </div>
+        {isMetadataCollapsed ? (
+          <div style={{
+            width: '48px',
+            background: 'var(--bg-primary)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: 'var(--space-2)'
+          }}>
+            <button
+              onClick={() => setIsMetadataCollapsed(false)}
+              className="btn btn-secondary"
+              style={{
+                padding: 'var(--space-2)',
+                width: '32px',
+                height: '32px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+              title="Expand metadata sidebar"
+            >
+              <svg style={{ width: '16px', height: '16px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+          </div>
+        ) : (
+          <div style={{
+            flex: '1',
+            minWidth: 0,
+            maxWidth: '25%',
+            overflowY: 'auto',
+            background: 'var(--bg-primary)'
+          }}>
+            <SkillmapMetadata
+              title={skillmap.title}
+              description={skillmap.description}
+              onChange={updateMetadata}
+              onCollapse={() => setIsMetadataCollapsed(true)}
+            />
+          </div>
+        )}
       </div>
     </div>
   );

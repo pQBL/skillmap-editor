@@ -10,6 +10,8 @@ interface ModuleSidebarProps {
   onReorder: (newOrder: number[]) => void;
   onAddModule: () => void;
   onRemoveModule: (index: number) => void;
+  onUpdateModuleTitle: (index: number, title: string) => void;
+  onCollapse: () => void;
 }
 
 export function ModuleSidebar({
@@ -19,9 +21,13 @@ export function ModuleSidebar({
   onReorder,
   onAddModule,
   onRemoveModule,
+  onUpdateModuleTitle,
+  onCollapse,
 }: ModuleSidebarProps) {
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [editingTitle, setEditingTitle] = useState<string>("");
 
   const handleDragStart = (index: number) => {
     setDraggedIndex(index);
@@ -52,6 +58,25 @@ export function ModuleSidebar({
     onRemoveModule(index);
   };
 
+  const handleStartEdit = (e: React.MouseEvent, index: number, title: string) => {
+    e.stopPropagation();
+    setEditingIndex(index);
+    setEditingTitle(title);
+  };
+
+  const handleFinishEdit = () => {
+    if (editingIndex !== null && editingTitle.trim()) {
+      onUpdateModuleTitle(editingIndex, editingTitle.trim());
+    }
+    setEditingIndex(null);
+    setEditingTitle("");
+  };
+
+  const handleCancelEdit = () => {
+    setEditingIndex(null);
+    setEditingTitle("");
+  };
+
   return (
     <div style={{
       flex: '1',
@@ -67,16 +92,39 @@ export function ModuleSidebar({
         padding: 'var(--space-4)',
         borderBottom: 'var(--border-width) solid var(--border-primary)'
       }}>
-        <h3 style={{
-          fontSize: 'var(--text-xs)',
-          fontWeight: 'var(--font-semibold)',
-          color: 'var(--text-secondary)',
-          marginBottom: 'var(--space-3)',
-          textTransform: 'uppercase',
-          letterSpacing: '0.05em'
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          marginBottom: 'var(--space-3)'
         }}>
-          Modules
-        </h3>
+          <h3 style={{
+            fontSize: 'var(--text-xs)',
+            fontWeight: 'var(--font-semibold)',
+            color: 'var(--text-secondary)',
+            textTransform: 'uppercase',
+            letterSpacing: '0.05em'
+          }}>
+            Modules
+          </h3>
+          <button
+            onClick={onCollapse}
+            className="btn btn-secondary"
+            style={{
+              padding: 'var(--space-1)',
+              width: '24px',
+              height: '24px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+            title="Collapse sidebar"
+          >
+            <svg style={{ width: '14px', height: '14px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+        </div>
         <button
           onClick={onAddModule}
           className="btn btn-primary"
@@ -176,17 +224,56 @@ export function ModuleSidebar({
                   }}>
                     {index + 1}
                   </span>
-                  <span style={{
-                    fontSize: 'var(--text-sm)',
-                    fontWeight: 'var(--font-medium)',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                    flex: 1,
-                    minWidth: 0
-                  }}>
-                    {module.title || `Module ${index + 1}`}
-                  </span>
+                  {editingIndex === index ? (
+                    <input
+                      type="text"
+                      value={editingTitle}
+                      onChange={(e) => setEditingTitle(e.target.value)}
+                      onBlur={handleFinishEdit}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') handleFinishEdit();
+                        if (e.key === 'Escape') handleCancelEdit();
+                      }}
+                      onClick={(e) => e.stopPropagation()}
+                      autoFocus
+                      className="input"
+                      style={{
+                        flex: 1,
+                        minWidth: 0,
+                        fontSize: 'var(--text-sm)',
+                        padding: 'var(--space-1) var(--space-2)',
+                        background: isSelected ? 'var(--color-primary-400)' : 'var(--bg-primary)',
+                        color: isSelected ? 'var(--text-on-primary)' : 'var(--text-primary)',
+                        border: `var(--border-width) solid ${isSelected ? 'var(--color-primary-300)' : 'var(--border-primary)'}`
+                      }}
+                    />
+                  ) : (
+                    <span
+                      onClick={(e) => handleStartEdit(e, index, module.title)}
+                      style={{
+                        fontSize: 'var(--text-sm)',
+                        fontWeight: 'var(--font-medium)',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        flex: 1,
+                        minWidth: 0,
+                        cursor: 'text',
+                        padding: 'var(--space-1) var(--space-2)',
+                        borderRadius: 'var(--radius-sm)',
+                        transition: 'background var(--transition-fast)'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = isSelected ? 'var(--color-primary-400)' : 'var(--bg-secondary)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = 'transparent';
+                      }}
+                      title="Click to edit title"
+                    >
+                      {module.title || `Module ${index + 1}`}
+                    </span>
+                  )}
                   {skillmap.modules.length > 1 && (
                     <button
                       onClick={(e) => handleRemoveClick(e, index)}

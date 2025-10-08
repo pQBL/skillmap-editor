@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { type Skillmap, type SkillmapModule, type Objective } from "@/lib/schema";
 
 interface SkillmapFormProps {
@@ -9,6 +10,9 @@ interface SkillmapFormProps {
 }
 
 export function SkillmapForm({ skillmap, onChange, selectedModuleIndex }: SkillmapFormProps) {
+  const [isEditingTitle, setIsEditingTitle] = React.useState(false);
+  const [editingTitle, setEditingTitle] = React.useState("");
+
   const updateModule = (index: number, module: SkillmapModule) => {
     const modules = [...skillmap.modules];
     modules[index] = module;
@@ -16,6 +20,23 @@ export function SkillmapForm({ skillmap, onChange, selectedModuleIndex }: Skillm
   };
 
   const selectedModule = skillmap.modules[selectedModuleIndex];
+
+  const handleStartEdit = () => {
+    setIsEditingTitle(true);
+    setEditingTitle(selectedModule?.title || "");
+  };
+
+  const handleFinishEdit = () => {
+    if (editingTitle.trim() && selectedModule) {
+      updateModule(selectedModuleIndex, { ...selectedModule, title: editingTitle.trim() });
+    }
+    setIsEditingTitle(false);
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditingTitle(false);
+    setEditingTitle("");
+  };
 
   return (
     <div style={{ padding: 'var(--space-6)' }}>
@@ -40,13 +61,49 @@ export function SkillmapForm({ skillmap, onChange, selectedModuleIndex }: Skillm
           }}>
             {selectedModuleIndex + 1}
           </span>
-          <h2 style={{
-            fontSize: 'var(--text-2xl)',
-            fontWeight: 'var(--font-bold)',
-            color: 'var(--text-primary)'
-          }}>
-            {selectedModule?.title || `Module ${selectedModuleIndex + 1}`}
-          </h2>
+          {isEditingTitle ? (
+            <input
+              type="text"
+              value={editingTitle}
+              onChange={(e) => setEditingTitle(e.target.value)}
+              onBlur={handleFinishEdit}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleFinishEdit();
+                if (e.key === 'Escape') handleCancelEdit();
+              }}
+              autoFocus
+              className="input"
+              style={{
+                flex: 1,
+                fontSize: 'var(--text-2xl)',
+                fontWeight: 'var(--font-bold)',
+                padding: 'var(--space-2) var(--space-3)'
+              }}
+            />
+          ) : (
+            <h2
+              onClick={handleStartEdit}
+              style={{
+                fontSize: 'var(--text-2xl)',
+                fontWeight: 'var(--font-bold)',
+                color: 'var(--text-primary)',
+                cursor: 'text',
+                padding: 'var(--space-2) var(--space-3)',
+                borderRadius: 'var(--radius-base)',
+                transition: 'background var(--transition-fast)',
+                flex: 1
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'var(--bg-secondary)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'transparent';
+              }}
+              title="Click to edit title"
+            >
+              {selectedModule?.title || `Module ${selectedModuleIndex + 1}`}
+            </h2>
+          )}
         </div>
       </div>
 
@@ -66,10 +123,6 @@ interface ModuleEditorProps {
 }
 
 function ModuleEditor({ module, onChange }: ModuleEditorProps) {
-  const updateTitle = (title: string) => {
-    onChange({ ...module, title });
-  };
-
   const updateObjective = (index: number, objective: Objective) => {
     const objectives = [...module.objectives];
     objectives[index] = objective;
@@ -100,27 +153,6 @@ function ModuleEditor({ module, onChange }: ModuleEditorProps) {
 
   return (
     <div className="card" style={{ padding: 'var(--space-6)' }}>
-      <div style={{ marginBottom: 'var(--space-6)' }}>
-        <label style={{
-          display: 'block',
-          fontSize: 'var(--text-xs)',
-          fontWeight: 'var(--font-semibold)',
-          color: 'var(--text-secondary)',
-          textTransform: 'uppercase',
-          letterSpacing: '0.05em',
-          marginBottom: 'var(--space-2)'
-        }}>
-          Module Title
-        </label>
-        <input
-          type="text"
-          value={module.title}
-          onChange={(e) => updateTitle(e.target.value)}
-          className="input"
-          placeholder="Enter module title..."
-        />
-      </div>
-
       <div>
         <div style={{
           display: 'flex',
