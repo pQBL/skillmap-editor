@@ -54,7 +54,9 @@ export function ModuleSidebar({
 
   return (
     <div style={{
-      width: '280px',
+      flex: '1',
+      minWidth: 0,
+      maxWidth: '25%',
       background: 'var(--bg-primary)',
       borderRight: 'var(--border-width) solid var(--border-primary)',
       display: 'flex',
@@ -120,7 +122,8 @@ export function ModuleSidebar({
                   color: isSelected ? 'var(--text-on-primary)' : 'var(--text-primary)',
                   borderRadius: 'var(--radius-base)',
                   opacity: isDragged ? 0.5 : 1,
-                  borderLeft: isDragOver ? '2px solid var(--color-primary-500)' : '2px solid transparent'
+                  borderTop: isDragOver ? '3px solid var(--color-primary-500)' : '3px solid transparent',
+                  marginTop: isDragOver ? 'var(--space-2)' : '0'
                 }}
                 onMouseEnter={(e) => {
                   if (!isSelected) {
@@ -136,12 +139,13 @@ export function ModuleSidebar({
                 <div style={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: 'var(--space-3)'
+                  gap: 'var(--space-2)',
+                  minWidth: 0
                 }}>
                   <svg
                     style={{
-                      width: '16px',
-                      height: '16px',
+                      width: '14px',
+                      height: '14px',
                       flexShrink: 0,
                       opacity: 0.4
                     }}
@@ -156,38 +160,33 @@ export function ModuleSidebar({
                       d="M4 8h16M4 16h16"
                     />
                   </svg>
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 'var(--space-2)',
+                  <span style={{
+                    fontSize: 'var(--text-xs)',
+                    fontWeight: 'var(--font-bold)',
+                    fontFamily: 'var(--font-mono)',
+                    padding: '2px var(--space-2)',
+                    background: isSelected
+                      ? 'var(--color-primary-600)'
+                      : 'var(--color-neutral-200)',
+                    color: isSelected
+                      ? 'var(--text-on-primary)'
+                      : 'var(--text-primary)',
+                    borderRadius: 'var(--radius-sm)',
+                    flexShrink: 0
+                  }}>
+                    {index + 1}
+                  </span>
+                  <span style={{
+                    fontSize: 'var(--text-sm)',
+                    fontWeight: 'var(--font-medium)',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
                     flex: 1,
                     minWidth: 0
                   }}>
-                    <span style={{
-                      fontSize: 'var(--text-xs)',
-                      fontWeight: 'var(--font-bold)',
-                      fontFamily: 'var(--font-mono)',
-                      padding: '2px var(--space-2)',
-                      background: isSelected
-                        ? 'var(--color-primary-600)'
-                        : 'var(--color-neutral-200)',
-                      color: isSelected
-                        ? 'var(--text-on-primary)'
-                        : 'var(--text-primary)',
-                      borderRadius: 'var(--radius-sm)'
-                    }}>
-                      {index + 1}
-                    </span>
-                    <span style={{
-                      fontSize: 'var(--text-sm)',
-                      fontWeight: 'var(--font-medium)',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap'
-                    }}>
-                      {module.title || `Module ${index + 1}`}
-                    </span>
-                  </div>
+                    {module.title || `Module ${index + 1}`}
+                  </span>
                   {skillmap.modules.length > 1 && (
                     <button
                       onClick={(e) => handleRemoveClick(e, index)}
@@ -201,7 +200,8 @@ export function ModuleSidebar({
                         border: 'none',
                         borderRadius: 'var(--radius-base)',
                         cursor: 'pointer',
-                        transition: 'opacity var(--transition-fast)'
+                        transition: 'opacity var(--transition-fast)',
+                        flexShrink: 0
                       }}
                     >
                       <svg style={{ width: '14px', height: '14px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">

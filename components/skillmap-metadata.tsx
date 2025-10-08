@@ -11,8 +11,21 @@ export function SkillmapMetadata({ title, description, onChange }: SkillmapMetad
     <div style={{
       background: 'var(--bg-primary)',
       padding: 'var(--space-6)',
-      borderBottom: 'var(--border-width) solid var(--border-primary)'
+      height: '100%'
     }}>
+      <h3 style={{
+        fontSize: 'var(--text-xs)',
+        fontWeight: 'var(--font-semibold)',
+        color: 'var(--text-secondary)',
+        textTransform: 'uppercase',
+        letterSpacing: '0.05em',
+        marginBottom: 'var(--space-4)',
+        paddingBottom: 'var(--space-3)',
+        borderBottom: 'var(--border-width) solid var(--border-primary)'
+      }}>
+        Skillmap Metadata
+      </h3>
+
       <div style={{
         marginBottom: 'var(--space-5)'
       }}>
@@ -25,7 +38,7 @@ export function SkillmapMetadata({ title, description, onChange }: SkillmapMetad
           letterSpacing: '0.05em',
           marginBottom: 'var(--space-2)'
         }}>
-          Skillmap Title
+          Title
         </label>
         <input
           type="text"
@@ -34,8 +47,8 @@ export function SkillmapMetadata({ title, description, onChange }: SkillmapMetad
           className="input"
           placeholder="Enter skillmap title..."
           style={{
-            fontSize: 'var(--text-lg)',
-            fontWeight: 'var(--font-semibold)'
+            fontSize: 'var(--text-base)',
+            fontWeight: 'var(--font-medium)'
           }}
         />
       </div>
@@ -56,11 +69,11 @@ export function SkillmapMetadata({ title, description, onChange }: SkillmapMetad
           value={description}
           onChange={(e) => onChange(title, e.target.value)}
           className="input"
-          rows={3}
+          rows={8}
           placeholder="Enter skillmap description..."
           style={{
             resize: 'vertical',
-            minHeight: '80px'
+            minHeight: '120px'
           }}
         />
       </div>
