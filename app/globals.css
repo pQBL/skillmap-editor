@@ -1,0 +1,18 @@
+@import "tailwindcss";
+@import "./design-system.css";
+
+@theme {
+  --color-*: initial;
+}
+
+body {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+}
+
+/* Smooth transitions for theme switching */
+body, body * {
+  transition-property: background-color, border-color, color;
+  transition-duration: var(--transition-fast);
+}
